@@ -9,7 +9,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Initialize Admin SDK (from SERVICE_ACCOUNT_JSON env var)
+// HEALTH CHECK (Render needs this!)
+app.get("/", (req, res) => {
+  res.status(200).json({ status: "OK" });
+});
+
+// Initialize Admin SDK
 if (!admin.apps.length) {
   if (!process.env.SERVICE_ACCOUNT_JSON) {
     console.error("Missing SERVICE_ACCOUNT_JSON env var");
@@ -30,10 +35,7 @@ app.post("/deleteUser", async (req, res) => {
       return res.status(400).json({ error: "Missing uid" });
     }
 
-    // Delete Firestore document (if exists)
     await admin.firestore().doc(`user/${uid}`).delete();
-
-    // Delete auth user
     await admin.auth().deleteUser(uid);
 
     return res.status(200).json({ success: true });
@@ -43,7 +45,7 @@ app.post("/deleteUser", async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
   console.log(`Admin backend running on http://localhost:${PORT}`);
 });
